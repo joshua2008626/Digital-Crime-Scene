@@ -1,0 +1,24 @@
+services:
+  api:
+    build: ./backend
+    environment:
+      DCS_DATABASE_URL: sqlite:////data/dcs.db
+      DCS_CORS_ORIGINS: http://localhost:8080
+      DCS_LLM_BASE_URL: ${DCS_LLM_BASE_URL:-}
+      DCS_LLM_API_KEY: ${DCS_LLM_API_KEY:-}
+      DCS_LLM_MODEL: ${DCS_LLM_MODEL:-}
+    volumes:
+      - dcs-data:/data
+    ports:
+      - "8000:8000"
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+volumes:
+  dcs-data:

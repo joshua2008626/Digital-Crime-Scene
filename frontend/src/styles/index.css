@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------
+   Design tokens. Navy/charcoal base, cyan + violet accents.
+   Red is RESERVED for simulated critical alerts; green for verified findings.
+   ------------------------------------------------------------------ */
+:root {
+  --bg: #070b14;
+  --surface: #101a2e;
+  --surface-2: #17233b;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --cyan: #22d3ee;
+  --violet: #a78bfa;
+  --alert: #f87171;
+  --ok: #4ade80;
+  --warn: #fbbf24;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ink-950 font-sans text-slate-200 antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 85% -10%, rgba(139, 92, 246, 0.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 0%, rgba(34, 211, 238, 0.08), transparent 55%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1, h2, h3, h4 {
+    @apply font-semibold tracking-tight text-slate-50;
+  }
+  :focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  ::selection {
+    background: rgba(34, 211, 238, 0.3);
+  }
+  /* Respect users who prefer less motion, plus the in-app setting. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  [data-reduce-motion='true'] *, [data-reduce-motion='true'] *::before, [data-reduce-motion='true'] *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-xl border border-white/10 bg-ink-800/70 shadow-panel;
+  }
+  .panel-quiet {
+    @apply rounded-xl border border-white/[0.07] bg-ink-900/60;
+  }
+  .glass {
+    @apply rounded-xl border border-white/10 bg-ink-800/50 backdrop-blur-md;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+  .btn-primary {
+    @apply border-cyan2-400/60 bg-cyan2-400 text-ink-950 hover:bg-cyan2-300;
+  }
+  .btn-secondary {
+    @apply border-white/15 bg-ink-700/70 text-slate-100 hover:bg-ink-600;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-slate-300 hover:bg-white/5 hover:text-white;
+  }
+  .btn-violet {
+    @apply border-violet2-400/50 bg-violet2-500/90 text-white hover:bg-violet2-500;
+  }
+  .btn-danger {
+    @apply border-alert-500/50 bg-alert-500/15 text-alert-400 hover:bg-alert-500/25;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-5;
+  }
+  .field {
+    @apply w-full rounded-lg border border-white/15 bg-ink-900/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan2-400 focus:outline-none;
+  }
+  .label {
+    @apply mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400;
+  }
+  .mono {
+    @apply font-mono text-[13px] leading-relaxed;
+  }
+  .term {
+    @apply relative cursor-help border-b border-dotted border-cyan2-400/70 text-inherit;
+  }
+  .container-app {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6;
+  }
+  .skip-link {
+    @apply absolute left-4 top-2 z-[100] -translate-y-20 rounded-md bg-cyan2-400 px-3 py-2 text-sm font-semibold text-ink-950 focus:translate-y-0;
+  }
+}
+
+/* Evidence content is plain text: preserve line breaks, never interpret as HTML. */
+.evidence-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* React Flow dark theme tweaks */
+.react-flow__attribution { display: none; }
+.react-flow__node { font-family: inherit; }
+.react-flow__controls button {
+  background: #17233b;
+  color: #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.react-flow__controls button:hover { background: #22314f; }
+.react-flow__controls button svg { fill: currentColor; }
+.react-flow__minimap { background: #101a2e; }
+.react-flow__edge-text { fill: #e2e8f0; font-size: 11px; }
+.react-flow__edge-textbg { fill: #101a2e; }
+.react-flow__edge.selected .react-flow__edge-path { stroke: #22d3ee !important; }
+
+/* Thin scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #33456a transparent; }
+
+@keyframes dcs-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.fade-up { animation: dcs-fade-up 0.3s ease-out both; }
+
+@keyframes dcs-pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.pulse-soft { animation: dcs-pulse-soft 2s ease-in-out infinite; }

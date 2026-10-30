@@ -1,0 +1,2056 @@
+{
+ "generatedBy": "frontend/scripts/export-cases.ts",
+ "cases": [
+  {
+   "id": "case-phantom-login",
+   "slug": "the-phantom-login",
+   "number": 1,
+   "title": "The Phantom Login",
+   "tagline": "She was asleep. Her account was not.",
+   "description": "A marketing coordinator's account signs in at 3 AM from somewhere it has never been, and then quietly starts forwarding mail. Work out how the account was taken over, and what is just noise.",
+   "difficulty": "beginner",
+   "estimatedMinutes": 25,
+   "categories": [
+    "Phishing",
+    "Account compromise",
+    "Authentication logs"
+   ],
+   "briefing": [
+    "Northwind Analytics is a 120-person fictional analytics firm. At 03:14 UTC on Tuesday 10 March 2026 the security monitoring system raised a medium-severity alert: an unfamiliar sign-in for the account pnair (Priya Nair, Marketing Coordinator).",
+    "Priya says she was asleep. You have been assigned as the investigating analyst. Your job is to work out what happened, how, and what to do about it, using only the evidence in the case file.",
+    "All times are UTC. Some evidence is relevant, some is noise, and some looks alarming but is unrelated. You will be marked on how well your conclusion is supported, not just on the final answer."
+   ],
+   "entities": [
+    {
+     "id": "priya",
+     "name": "Priya Nair",
+     "role": "Marketing Coordinator",
+     "kind": "person",
+     "note": "Account: pnair. Not a finance user."
+    },
+    {
+     "id": "helpdesk",
+     "name": "Northwind IT Helpdesk",
+     "role": "Legitimate internal IT team",
+     "kind": "org",
+     "note": "Real domain: northwind-analytics.example"
+    },
+    {
+     "id": "mailgw",
+     "name": "Mail platform",
+     "role": "Hosted email and webmail",
+     "kind": "service"
+    },
+    {
+     "id": "finshare",
+     "name": "Finance share",
+     "role": "File share used by the Finance team",
+     "kind": "host"
+    },
+    {
+     "id": "unknown",
+     "name": "Unknown external actor",
+     "role": "Not yet identified",
+     "kind": "account"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "p-o1",
+     "text": "Work out how the attacker could have obtained Priya's password."
+    },
+    {
+     "id": "p-o2",
+     "text": "Understand the 03:12 login and why multi-factor authentication did not stop it."
+    },
+    {
+     "id": "p-o3",
+     "text": "Establish what the actor did once inside the account."
+    },
+    {
+     "id": "p-o4",
+     "text": "Separate real signals from noise (at least two decoys)."
+    }
+   ],
+   "evidence": [
+    {
+     "id": "P-01",
+     "title": "Email: \"Mailbox storage full — verify now\"",
+     "type": "email",
+     "source": "Mail gateway archive",
+     "timestamp": "2026-03-09T17:40:00Z",
+     "summary": "Message delivered to Priya's inbox Monday evening, claiming her mailbox is nearly full.",
+     "fields": [
+      {
+       "label": "From",
+       "value": "\"Northwind IT Helpdesk\" <support@northwind-analytics-helpdesk.example>"
+      },
+      {
+       "label": "Reply-To",
+       "value": "verify-desk@mail-forward.example"
+      },
+      {
+       "label": "To",
+       "value": "pnair@northwind-analytics.example"
+      },
+      {
+       "label": "Subject",
+       "value": "ACTION REQUIRED: Mailbox storage full — verify within 2 hours"
+      },
+      {
+       "label": "Delivered",
+       "value": "Mon 09 Mar 2026 17:40 UTC"
+      }
+     ],
+     "headers": [
+      {
+       "label": "Authentication-Results",
+       "value": "spf=fail; dkim=none; dmarc=fail"
+      },
+      {
+       "label": "Received",
+       "value": "from mx7.bulk-sender.example (192.0.2.15)"
+      },
+      {
+       "label": "X-Original-Sender",
+       "value": "support@northwind-analytics-helpdesk.example"
+      }
+     ],
+     "content": "Hello Priya,\n\nYour mailbox is 98% full. Unless you verify your account within 2 hours, incoming mail will be rejected and your account may be suspended.\n\n[ Verify mailbox ]\n   Link text:   https://mail.northwind-analytics.example/verify\n   Real target: hxxps://northwind-analytics-helpdesk[.]example/login   (defanged — never clickable)\n\nThanks,\nIT Helpdesk"
+    },
+    {
+     "id": "P-02",
+     "title": "Browser record: form submitted to look-alike sign-in page",
+     "type": "browser",
+     "source": "Endpoint browser history (PNAIR-LT)",
+     "timestamp": "2026-03-09T17:44:12Z",
+     "summary": "Four minutes after the email arrived, Priya's laptop sent a form submission to the look-alike domain.",
+     "fields": [
+      {
+       "label": "URL",
+       "value": "hxxps://northwind-analytics-helpdesk[.]example/login"
+      },
+      {
+       "label": "Action",
+       "value": "POST (form submission)"
+      },
+      {
+       "label": "Opened from",
+       "value": "Webmail message link click"
+      },
+      {
+       "label": "Page title",
+       "value": "Northwind Mail — Sign in"
+      },
+      {
+       "label": "Time on page",
+       "value": "41 seconds"
+      },
+      {
+       "label": "Device",
+       "value": "PNAIR-LT (company laptop, antivirus healthy)"
+      }
+     ],
+     "headers": [],
+     "content": "17:43:31  GET   hxxps://northwind-analytics-helpdesk[.]example/login     200\n17:44:12  POST  hxxps://northwind-analytics-helpdesk[.]example/login     302 -> https://mail.northwind-analytics.example/\n17:44:13  GET   https://mail.northwind-analytics.example/                 200"
+    },
+    {
+     "id": "P-03",
+     "title": "Authentication log: successful sign-in at 03:12",
+     "type": "auth_log",
+     "source": "Mail platform sign-in log",
+     "timestamp": "2026-03-10T03:12:07Z",
+     "summary": "Account pnair signs in successfully from an IP and region never seen before, using a legacy protocol.",
+     "fields": [
+      {
+       "label": "User",
+       "value": "pnair@northwind-analytics.example"
+      },
+      {
+       "label": "Result",
+       "value": "Success"
+      },
+      {
+       "label": "Source IP",
+       "value": "203.0.113.58"
+      },
+      {
+       "label": "Location",
+       "value": "Unfamiliar region (first time seen for this account)"
+      },
+      {
+       "label": "Protocol",
+       "value": "IMAP (legacy / basic authentication)"
+      },
+      {
+       "label": "MFA",
+       "value": "Not evaluated for legacy protocols"
+      },
+      {
+       "label": "User agent",
+       "value": "generic-imap-client/2.1"
+      }
+     ],
+     "headers": [],
+     "content": "03:11:40Z  pnair  IMAP  203.0.113.58  FAILURE  reason=bad_password\n03:12:07Z  pnair  IMAP  203.0.113.58  SUCCESS  mfa=not_applicable"
+    },
+    {
+     "id": "P-04",
+     "title": "Baseline: Priya's normal sign-ins (last 30 days)",
+     "type": "auth_log",
+     "source": "Identity provider history",
+     "timestamp": "2026-03-09T00:00:00Z",
+     "summary": "Where, when and how Priya usually signs in.",
+     "fields": [
+      {
+       "label": "Usual IPs",
+       "value": "198.51.100.24 (home), 192.0.2.10 (office VPN)"
+      },
+      {
+       "label": "Usual hours",
+       "value": "07:30–19:00 local time"
+      },
+      {
+       "label": "Usual method",
+       "value": "Modern authentication with MFA push"
+      },
+      {
+       "label": "Sign-ins after midnight",
+       "value": "None in 30 days"
+      },
+      {
+       "label": "Finance share access",
+       "value": "Never"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "P-05",
+     "title": "Failed-login burst across 40 accounts (Monday night)",
+     "type": "auth_log",
+     "source": "Mail platform sign-in log",
+     "timestamp": "2026-03-09T22:00:00Z",
+     "summary": "312 failed sign-ins against 40 accounts from a single IP over 41 minutes.",
+     "fields": [
+      {
+       "label": "Source IP",
+       "value": "192.0.2.77"
+      },
+      {
+       "label": "Window",
+       "value": "22:00–22:41 UTC"
+      },
+      {
+       "label": "Accounts targeted",
+       "value": "40 (including pnair)"
+      },
+      {
+       "label": "Failures",
+       "value": "312"
+      },
+      {
+       "label": "Successes",
+       "value": "0"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "P-06",
+     "title": "Mailbox rule created: forward invoice and payment mail",
+     "type": "system_log",
+     "source": "Mail platform admin audit log",
+     "timestamp": "2026-03-10T03:18:30Z",
+     "summary": "Six minutes after the login, a rule was created that forwards payment-related mail to an external address.",
+     "fields": [
+      {
+       "label": "Actor session",
+       "value": "pnair from 203.0.113.58"
+      },
+      {
+       "label": "Rule condition",
+       "value": "Subject or body contains \"invoice\", \"payment\" or \"wire\""
+      },
+      {
+       "label": "Action 1",
+       "value": "Forward to ext.collector@mail-forward.example"
+      },
+      {
+       "label": "Action 2",
+       "value": "Delete forwarded copy from Sent Items"
+      },
+      {
+       "label": "Action 3",
+       "value": "Mark as read"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "P-07",
+     "title": "File access: Finance share workbook downloaded",
+     "type": "file_metadata",
+     "source": "File server audit log",
+     "timestamp": "2026-03-10T03:25:00Z",
+     "summary": "The same session opened and downloaded a finance workbook Priya has never touched.",
+     "fields": [
+      {
+       "label": "User",
+       "value": "pnair"
+      },
+      {
+       "label": "Source IP",
+       "value": "203.0.113.58"
+      },
+      {
+       "label": "File",
+       "value": "\\\\FIN-SHARE\\Payments\\Q3-Vendor-Payments.xlsx"
+      },
+      {
+       "label": "Action",
+       "value": "Open + download (4.1 MB)"
+      },
+      {
+       "label": "Prior access by this user",
+       "value": "Never"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "P-08",
+     "title": "Statement: Priya Nair",
+     "type": "witness",
+     "source": "Interview, Tuesday 10:15",
+     "timestamp": "2026-03-10T10:15:00Z",
+     "summary": "Priya's account of Monday evening and Tuesday morning.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Priya Nair, Marketing Coordinator"
+      },
+      {
+       "label": "Reliability",
+       "value": "Consistent with logs where they overlap"
+      }
+     ],
+     "headers": [],
+     "content": "\"On Monday evening I got an email from IT saying my mailbox was full. I clicked the button and typed my password. The page just reloaded and my inbox came up, so I thought it was fixed. I was asleep at 3 AM. I did not set up any forwarding. I have never used the finance share.\""
+    },
+    {
+     "id": "P-09",
+     "title": "Mail platform configuration: legacy authentication",
+     "type": "config",
+     "source": "Tenant security settings export",
+     "timestamp": "2026-03-10T10:40:00Z",
+     "summary": "Shows which sign-in methods are allowed and where MFA is enforced.",
+     "fields": [
+      {
+       "label": "Legacy authentication (IMAP/POP/SMTP basic auth)",
+       "value": "Enabled for all users"
+      },
+      {
+       "label": "MFA enforcement",
+       "value": "Modern authentication only"
+      },
+      {
+       "label": "Conditional access for legacy protocols",
+       "value": "None"
+      },
+      {
+       "label": "Last review",
+       "value": "Fourteen months ago"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "P-10",
+     "title": "VPN sign-in Tuesday 08:05 from a new IP",
+     "type": "network_log",
+     "source": "VPN concentrator",
+     "timestamp": "2026-03-10T08:05:19Z",
+     "summary": "Priya connects to the company VPN from an IP not in her baseline.",
+     "fields": [
+      {
+       "label": "Source IP",
+       "value": "198.51.100.130"
+      },
+      {
+       "label": "MFA",
+       "value": "Push approved on enrolled device \"Priya-iPhone\""
+      },
+      {
+       "label": "Time",
+       "value": "08:05 — her normal start time"
+      },
+      {
+       "label": "Context note",
+       "value": "ISP outage notice posted for her area Tuesday morning"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "P-11",
+     "title": "Email: IT password-expiry reminder (legitimate)",
+     "type": "email",
+     "source": "Mail gateway archive",
+     "timestamp": "2026-03-09T09:00:00Z",
+     "summary": "A routine scheduled notice sent by the real IT team that morning.",
+     "fields": [
+      {
+       "label": "From",
+       "value": "IT Notices <it-notices@northwind-analytics.example>"
+      },
+      {
+       "label": "Authentication-Results",
+       "value": "spf=pass; dkim=pass; dmarc=pass"
+      },
+      {
+       "label": "Link text",
+       "value": "https://portal.northwind-analytics.example/password"
+      },
+      {
+       "label": "Real target",
+       "value": "https://portal.northwind-analytics.example/password"
+      }
+     ],
+     "headers": [],
+     "content": "Your password will expire in 14 days. Please change it using the staff portal."
+    },
+    {
+     "id": "P-12",
+     "title": "Security alert SEC-2210: unfamiliar sign-in",
+     "type": "system_log",
+     "source": "Security monitoring",
+     "timestamp": "2026-03-10T03:14:00Z",
+     "summary": "The automated alert that started this investigation.",
+     "fields": [
+      {
+       "label": "Severity",
+       "value": "Medium"
+      },
+      {
+       "label": "Rule",
+       "value": "Sign-in from a never-before-seen IP and region"
+      },
+      {
+       "label": "Account",
+       "value": "pnair"
+      },
+      {
+       "label": "Triage started",
+       "value": "Tue 09:30 UTC (next analyst shift)"
+      }
+     ],
+     "headers": [],
+     "content": null
+    }
+   ],
+   "learningObjectives": [
+    "Recognise indicators of a credential-phishing email (sender domain, authentication results, link mismatch, urgency).",
+    "Read authentication logs and compare them against a baseline.",
+    "Explain why legacy protocols and missing MFA enable account takeover.",
+    "Identify post-compromise persistence such as mailbox forwarding rules.",
+    "Separate genuine indicators from background noise and unrelated anomalies."
+   ],
+   "verdictOptions": [
+    {
+     "id": "credential_phish",
+     "label": "Credential phishing led to takeover of Priya's account by an external party"
+    },
+    {
+     "id": "brute_force",
+     "label": "The attacker guessed the password through brute force or password spraying"
+    },
+    {
+     "id": "malware",
+     "label": "Malware or a keylogger on Priya's laptop stole the password"
+    },
+    {
+     "id": "insider_misuse",
+     "label": "Priya deliberately misused her own account"
+    },
+    {
+     "id": "false_positive",
+     "label": "The alert was a false positive from legitimate travel or VPN use"
+    }
+   ]
+  },
+  {
+   "id": "case-missing-blueprint",
+   "slug": "the-missing-blueprint",
+   "number": 2,
+   "title": "The Missing Blueprint",
+   "tagline": "The design left the building. Nobody can say how.",
+   "description": "A competitor's sneak-peek image looks suspiciously like a confidential gearbox drawing. Trace how the file became exposed, resist the obvious suspects, and be honest about what the evidence cannot prove.",
+   "difficulty": "intermediate",
+   "estimatedMinutes": 35,
+   "categories": [
+    "Data leak",
+    "Cloud sharing",
+    "Access auditing"
+   ],
+   "briefing": [
+    "Aerolume Robotics is a fictional 300-person robotics manufacturer. On Friday 17 April 2026 at 09:00 UTC, a rival firm, Vantor Dynamics, published a \"sneak peek\" image whose gear layout closely resembles the internal KESTREL gearbox drawing, the company's most sensitive design.",
+    "Engineering leadership wants to know whether the design leaked, how, and from whom. Several people have already been named in hallway gossip. You must work from the records, not the rumours.",
+    "Be careful: similarity between two drawings is not proof of copying, and access is not the same as intent. All times are UTC."
+   ],
+   "entities": [
+    {
+     "id": "tomas",
+     "name": "Tomas Brandt",
+     "role": "Contract draftsman",
+     "kind": "person",
+     "note": "Account: c-tbrandt. Laptop LT-0412."
+    },
+    {
+     "id": "sofia",
+     "name": "Sofia Reyes",
+     "role": "Project manager",
+     "kind": "person",
+     "note": "Account: sreyes"
+    },
+    {
+     "id": "dev",
+     "name": "Dev Malhotra",
+     "role": "Lead engineer, owner of KESTREL files",
+     "kind": "person",
+     "note": "Account: dmalhotra"
+    },
+    {
+     "id": "elena",
+     "name": "Elena Park",
+     "role": "Industrial designer",
+     "kind": "person"
+    },
+    {
+     "id": "ridgeway",
+     "name": "Ridgeway Machining",
+     "role": "Approved external machining vendor (NDA signed)",
+     "kind": "org",
+     "note": "Contact: Hana Voss"
+    },
+    {
+     "id": "vantor",
+     "name": "Vantor Dynamics",
+     "role": "Competitor that published the preview",
+     "kind": "org"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "b-o1",
+     "text": "Establish how the file became exposed to people outside the company."
+    },
+    {
+     "id": "b-o2",
+     "text": "Work out who accessed it and whether each access was authorised."
+    },
+    {
+     "id": "b-o3",
+     "text": "Understand why the link was created (the business context)."
+    },
+    {
+     "id": "b-o4",
+     "text": "Test the obvious suspects against the record (check at least three)."
+    }
+   ],
+   "evidence": [
+    {
+     "id": "B-01",
+     "title": "Incident report: competitor preview resembles KESTREL",
+     "type": "document",
+     "source": "Security inbox, report from engineering leadership",
+     "timestamp": "2026-04-17T09:20:00Z",
+     "summary": "The report that opened the case, with a similarity assessment from the lead engineer.",
+     "fields": [
+      {
+       "label": "Reported by",
+       "value": "Dev Malhotra, Lead engineer"
+      },
+      {
+       "label": "Competitor post time",
+       "value": "Fri 17 Apr 2026 09:00 UTC"
+      },
+      {
+       "label": "Similarity",
+       "value": "Gear layout and several tolerance callouts match"
+      },
+      {
+       "label": "Title block",
+       "value": "Cropped from the competitor image"
+      },
+      {
+       "label": "Caveat from reporter",
+       "value": "Fixture drawings show part of the same geometry"
+      }
+     ],
+     "headers": [],
+     "content": "\"The layout and callouts in Vantor's image look like our KESTREL v7 drawing. I can't tell whether they had the full CAD or only a partial drawing: our fixture drawings for the machining vendor show a lot of the same geometry. Please find out whether anything left the company.\""
+    },
+    {
+     "id": "B-02",
+     "title": "File metadata: KESTREL_Gearbox_v7.cad",
+     "type": "file_metadata",
+     "source": "Document platform, file properties",
+     "timestamp": "2026-04-16T19:48:22Z",
+     "summary": "Sensitivity, owner and current sharing settings of the confidential drawing.",
+     "fields": [
+      {
+       "label": "Path",
+       "value": "/Projects/KESTREL/Release/KESTREL_Gearbox_v7.cad"
+      },
+      {
+       "label": "Sensitivity label",
+       "value": "Confidential — Engineering"
+      },
+      {
+       "label": "Owner",
+       "value": "dmalhotra"
+      },
+      {
+       "label": "Current link setting",
+       "value": "Anyone with the link — can download (no sign-in required)"
+      },
+      {
+       "label": "Previous setting",
+       "value": "Specific people only"
+      },
+      {
+       "label": "Setting changed",
+       "value": "Thu 16 Apr 2026 19:48:22 UTC by c-tbrandt"
+      },
+      {
+       "label": "Applies to",
+       "value": "Entire /Release folder (4 files)"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-03",
+     "title": "Sharing audit log: link created Thursday evening",
+     "type": "system_log",
+     "source": "Document platform audit log",
+     "timestamp": "2026-04-16T19:48:22Z",
+     "summary": "Who created the link, from which device, and where it was sent.",
+     "fields": [
+      {
+       "label": "Actor",
+       "value": "c-tbrandt (MFA satisfied)"
+      },
+      {
+       "label": "Device",
+       "value": "LT-0412, company-managed laptop, office network 192.0.2.30"
+      },
+      {
+       "label": "Link scope",
+       "value": "Anyone — download"
+      },
+      {
+       "label": "Target",
+       "value": "/Projects/KESTREL/Release (folder, not a single file)"
+      },
+      {
+       "label": "Link emailed to",
+       "value": "quotes@ridgeway-machining.example, cc sreyes@aerolume-robotics.example"
+      }
+     ],
+     "headers": [],
+     "content": "19:40:05Z  SIGNIN   c-tbrandt  192.0.2.30  mfa=ok  device=LT-0412\n19:48:22Z  LINK_CREATE  folder=/Projects/KESTREL/Release  scope=anyone  perm=download  expiry=none\n19:48:50Z  EMAIL_SENT  to=quotes@ridgeway-machining.example  cc=sreyes@aerolume-robotics.example  subject=\"Fixture drawings for quote\""
+    },
+    {
+     "id": "B-04",
+     "title": "Link access log: who downloaded what",
+     "type": "network_log",
+     "source": "Document platform link-access log",
+     "timestamp": "2026-04-16T22:14:02Z",
+     "summary": "Every download made through the public link, with source IPs.",
+     "fields": [
+      {
+       "label": "Vendor-range downloads",
+       "value": "1 (20:20 from 198.51.100.7)"
+      },
+      {
+       "label": "Other downloads",
+       "value": "4 from 203.0.113.91, no sign-in"
+      },
+      {
+       "label": "Files fetched by 203.0.113.91",
+       "value": "KESTREL_Gearbox_v7.cad (twice), Tolerance_Stack.xlsx, BOM_v7.xlsx"
+      },
+      {
+       "label": "Authentication",
+       "value": "None (anonymous link)"
+      }
+     ],
+     "headers": [],
+     "content": "20:20:14Z  DOWNLOAD  Fixtures/Fixture_Drawings.zip   198.51.100.7   anonymous   UA=Mozilla/5.0 (generic)\n22:10:41Z  DOWNLOAD  Release/KESTREL_Gearbox_v7.cad      203.0.113.91   anonymous   UA=Mozilla/5.0 (generic)\n22:10:58Z  DOWNLOAD  Release/Tolerance_Stack.xlsx         203.0.113.91   anonymous   UA=Mozilla/5.0 (generic)\n22:11:20Z  DOWNLOAD  Release/BOM_v7.xlsx                  203.0.113.91   anonymous   UA=Mozilla/5.0 (generic)\n22:14:02Z  DOWNLOAD  Release/KESTREL_Gearbox_v7.cad      203.0.113.91   anonymous   UA=Mozilla/5.0 (generic)"
+    },
+    {
+     "id": "B-05",
+     "title": "Email: Sofia Reyes asks for the fixture drawings",
+     "type": "email",
+     "source": "Mail archive",
+     "timestamp": "2026-04-16T17:55:00Z",
+     "summary": "The project manager's instruction to the contractor, before the link was created.",
+     "fields": [
+      {
+       "label": "From",
+       "value": "sreyes@aerolume-robotics.example"
+      },
+      {
+       "label": "To",
+       "value": "tbrandt@aerolume-robotics.example"
+      },
+      {
+       "label": "Sent",
+       "value": "Thu 16 Apr 2026 17:55 UTC"
+      },
+      {
+       "label": "Subject",
+       "value": "Ridgeway needs the fixture drawings tonight"
+      }
+     ],
+     "headers": [],
+     "content": "\"Tomas — Ridgeway needs the fixture drawings for quoting tonight. Please send them the Fixtures folder ONLY, not the full release. A link is fine. Thanks, Sofia\""
+    },
+    {
+     "id": "B-06",
+     "title": "Vendor onboarding record: Ridgeway Machining",
+     "type": "document",
+     "source": "Procurement system",
+     "timestamp": "2026-01-12T00:00:00Z",
+     "summary": "What Ridgeway is approved to access and from where.",
+     "fields": [
+      {
+       "label": "NDA",
+       "value": "Signed 12 Jan 2026"
+      },
+      {
+       "label": "Approved office egress range",
+       "value": "198.51.100.0/28 (198.51.100.0–198.51.100.15)"
+      },
+      {
+       "label": "Preferred access method",
+       "value": "Named guest accounts (not anonymous links)"
+      },
+      {
+       "label": "Contact",
+       "value": "Hana Voss, Operations"
+      },
+      {
+       "label": "Mentions of 203.0.113.91",
+       "value": "None"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-07",
+     "title": "Statement: Tomas Brandt",
+     "type": "witness",
+     "source": "Interview, Friday 11:30",
+     "timestamp": "2026-04-17T11:30:00Z",
+     "summary": "The contractor's explanation of what he did and why.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Tomas Brandt, contract draftsman"
+      },
+      {
+       "label": "Reliability",
+       "value": "Consistent with audit log timestamps and email"
+      }
+     ],
+     "headers": [],
+     "content": "\"Sofia asked me to get the fixture drawings to Ridgeway. I right-clicked the Release folder, clicked Get link and pasted it into an email. I assumed it would only work for them. I didn't notice it said Anyone. I haven't shared the link with anybody else and I only found out about the preview from the news today.\""
+    },
+    {
+     "id": "B-08",
+     "title": "Sharing policy configuration",
+     "type": "config",
+     "source": "Document platform admin settings",
+     "timestamp": "2026-04-17T12:00:00Z",
+     "summary": "Default behaviour when staff or contractors create external links.",
+     "fields": [
+      {
+       "label": "Default external link scope (contractors)",
+       "value": "Anyone with the link"
+      },
+      {
+       "label": "Warning on Confidential-labelled items",
+       "value": "Disabled"
+      },
+      {
+       "label": "Link expiry",
+       "value": "None by default"
+      },
+      {
+       "label": "Admin approval for external links",
+       "value": "Not required"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-09",
+     "title": "Access summary: Dev Malhotra (last 21 days)",
+     "type": "file_metadata",
+     "source": "Document platform activity report",
+     "timestamp": "2026-04-17T12:15:00Z",
+     "summary": "Dev opened or edited KESTREL files 214 times.",
+     "fields": [
+      {
+       "label": "Opens / edits",
+       "value": "214 over 21 days"
+      },
+      {
+       "label": "Source",
+       "value": "Office network and managed laptop only"
+      },
+      {
+       "label": "Sharing events",
+       "value": "None"
+      },
+      {
+       "label": "Downloads to removable media",
+       "value": "None"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-10",
+     "title": "USB event: Elena Park's laptop, Thursday 18:20",
+     "type": "system_log",
+     "source": "Endpoint device-control log (EPARK-LT)",
+     "timestamp": "2026-04-16T18:20:00Z",
+     "summary": "A removable drive was connected and a file was copied to it.",
+     "fields": [
+      {
+       "label": "Device",
+       "value": "Company-issued encrypted USB drive (approved)"
+      },
+      {
+       "label": "File copied",
+       "value": "Q2_Design_Review.pptx (38 MB)"
+      },
+      {
+       "label": "Sensitivity label",
+       "value": "Internal"
+      },
+      {
+       "label": "KESTREL files involved",
+       "value": "None"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-11",
+     "title": "Badge log: after-hours entry at 21:50",
+     "type": "system_log",
+     "source": "Physical access control",
+     "timestamp": "2026-04-16T21:50:00Z",
+     "summary": "Someone entered the building after hours, 20 minutes before the external download.",
+     "fields": [
+      {
+       "label": "Badge",
+       "value": "R. Shah, Facilities"
+      },
+      {
+       "label": "Reason on record",
+       "value": "Scheduled HVAC maintenance work order WO-2291"
+      },
+      {
+       "label": "Areas entered",
+       "value": "Plant room and loading bay only"
+      },
+      {
+       "label": "Engineering floor",
+       "value": "No access"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-12",
+     "title": "Network log: repeated denied SSH attempts",
+     "type": "network_log",
+     "source": "File server firewall",
+     "timestamp": "2026-04-16T03:05:00Z",
+     "summary": "40 failed SSH attempts against the file server overnight.",
+     "fields": [
+      {
+       "label": "Source IP",
+       "value": "192.0.2.200"
+      },
+      {
+       "label": "Attempts",
+       "value": "40, all denied"
+      },
+      {
+       "label": "Authentication",
+       "value": "Key-based only; no password logins accepted"
+      },
+      {
+       "label": "Successful sessions",
+       "value": "0"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "B-13",
+     "title": "Statement: Hana Voss, Ridgeway Machining",
+     "type": "witness",
+     "source": "Phone interview, Friday 14:00",
+     "timestamp": "2026-04-17T14:00:00Z",
+     "summary": "The vendor's account of what they received and did with it.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Hana Voss, Operations"
+      },
+      {
+       "label": "Reliability",
+       "value": "Plausible; not independently verified"
+      }
+     ],
+     "headers": [],
+     "content": "\"We got Tomas's email at about eight, downloaded the fixture drawings from our office and started quoting. We did not forward the link. I can't speak for every person on our team, so I'm happy to check our mail logs for forwarding if you give us two days.\""
+    }
+   ],
+   "learningObjectives": [
+    "Read cloud-sharing audit and link-access logs.",
+    "Recognise how risky defaults and over-broad link scopes expose confidential data.",
+    "Separate accidental exposure from deliberate exfiltration using evidence of intent, scope and behaviour.",
+    "Test suspects against records instead of rumours, and discard red herrings.",
+    "State clearly what cannot be concluded (attribution of the external downloader, the preview's true source)."
+   ],
+   "verdictOptions": [
+    {
+     "id": "misconfigured_share",
+     "label": "Accidental overexposure: a public share link created for a legitimate vendor request was later used by an unidentified external party"
+    },
+    {
+     "id": "vendor_leak",
+     "label": "Ridgeway Machining passed the link on to others"
+    },
+    {
+     "id": "malicious_insider",
+     "label": "Tomas Brandt deliberately leaked the design"
+    },
+    {
+     "id": "external_breach",
+     "label": "An outside attacker breached the file server"
+    },
+    {
+     "id": "usb_theft",
+     "label": "A staff member copied the design to USB"
+    },
+    {
+     "id": "lead_engineer",
+     "label": "Dev Malhotra leaked the design"
+    }
+   ]
+  },
+  {
+   "id": "case-locked-office",
+   "slug": "the-locked-office",
+   "number": 3,
+   "title": "The Locked Office",
+   "tagline": "Monday, 07:42. Every screen says the same thing.",
+   "description": "A small dental group arrives to find files locked and a ransom note on the screen. Reconstruct how the intruders got in, work out what can be safely recovered, and build a containment and recovery plan that does not make things worse.",
+   "difficulty": "advanced",
+   "estimatedMinutes": 45,
+   "categories": [
+    "Ransomware response",
+    "Backups and recovery",
+    "Incident containment"
+   ],
+   "briefing": [
+    "Lakeview Dental Group is a fictional 26-computer practice. At 07:42 UTC on Monday 18 May 2026 the office manager found a ransom note on the reception PC. The shared patient schedule and billing files cannot be opened. The practice opens patients at 08:30.",
+    "You are the incident responder on call. The owner wants the schedule back immediately and is considering paying. Your job is to establish what happened, how far it spread, what can be restored safely, and what the team should do first, in the right order.",
+    "This is a simulation: nothing here is real malware. Pay attention to the sequence of events, the evidence you would need to preserve, and which instinctive actions would cause harm. All times are UTC."
+   ],
+   "entities": [
+    {
+     "id": "okafor",
+     "name": "Dr. Anita Okafor",
+     "role": "Practice owner",
+     "kind": "person",
+     "note": "Under pressure to reopen"
+    },
+    {
+     "id": "dana",
+     "name": "Dana Whitfield",
+     "role": "Office manager",
+     "kind": "person",
+     "note": "Found the note, runs the weekly backup rotation"
+    },
+    {
+     "id": "svcvendor",
+     "name": "svc-vendor",
+     "role": "Service account for the practice-software vendor (MedSoft Support)",
+     "kind": "account",
+     "note": "Vendor normally connects from 198.51.100.200"
+    },
+    {
+     "id": "fs01",
+     "name": "FS01",
+     "role": "File server (Clients, Billing, Archive shares)",
+     "kind": "host"
+    },
+    {
+     "id": "nas01",
+     "name": "NAS01",
+     "role": "Online backup appliance, domain-joined",
+     "kind": "host"
+    },
+    {
+     "id": "jkarlsson",
+     "name": "J. Karlsson",
+     "role": "Former IT contractor (left in February)",
+     "kind": "person",
+     "note": "Account jkarlsson"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "l-o1",
+     "text": "Determine how the intruders got in and how they gained control."
+    },
+    {
+     "id": "l-o2",
+     "text": "Establish the scope of the incident and what the attackers did before encrypting."
+    },
+    {
+     "id": "l-o3",
+     "text": "Work out which backups can be trusted for recovery."
+    },
+    {
+     "id": "l-o4",
+     "text": "Identify what executed the encryption, how it was launched, and why protections did not stop it."
+    },
+    {
+     "id": "l-o5",
+     "text": "Rule out the tempting alternative explanations (at least two)."
+    }
+   ],
+   "evidence": [
+    {
+     "id": "L-01",
+     "title": "Ransom note found on RECEPTION-PC",
+     "type": "document",
+     "source": "Reception PC desktop, file README_RESTORE.txt",
+     "timestamp": "2026-05-18T07:42:00Z",
+     "summary": "A text note demanding payment and claiming copies of the practice's data were taken.",
+     "fields": [
+      {
+       "label": "File",
+       "value": "README_RESTORE.txt (also on FS01, BILLING-02, BILLING-03)"
+      },
+      {
+       "label": "Encrypted file extension",
+       "value": ".lkd7"
+      },
+      {
+       "label": "Claim of stolen data",
+       "value": "Yes, unverified"
+      },
+      {
+       "label": "Payment details",
+       "value": "[REDACTED — simulation contains none]"
+      },
+      {
+       "label": "Contact",
+       "value": "restore-desk@secure-mail.example"
+      }
+     ],
+     "headers": [],
+     "content": "YOUR FILES HAVE BEEN ENCRYPTED.\nWe also hold copies of your patient and billing data. Contact restore-desk@secure-mail.example within 72 hours or the data will be published.\nDo not rename files. Do not contact the police.\n\n(Simulation note: this text is fictional. It contains no real payment address.)"
+    },
+    {
+     "id": "L-02",
+     "title": "EDR alert: mass file modification on FS01",
+     "type": "system_log",
+     "source": "Endpoint detection and response console",
+     "timestamp": "2026-05-18T02:51:12Z",
+     "summary": "An unsigned program began modifying files at ransomware-like speed on the file server.",
+     "fields": [
+      {
+       "label": "Host",
+       "value": "FS01"
+      },
+      {
+       "label": "Process",
+       "value": "svc_update.exe"
+      },
+      {
+       "label": "Path",
+       "value": "C:\\Users\\Public\\svc_update.exe"
+      },
+      {
+       "label": "Signature",
+       "value": "Unsigned; first seen 02:49 UTC"
+      },
+      {
+       "label": "Behaviour",
+       "value": "~1,100 file renames per minute (.lkd7)"
+      },
+      {
+       "label": "Parent",
+       "value": "Remote session of svc-vendor"
+      },
+      {
+       "label": "Action taken",
+       "value": "Detect only (prevention not enabled on servers)"
+      }
+     ],
+     "headers": [],
+     "content": "02:49:30Z  NEW_BINARY      svc_update.exe   unsigned  C:\\Users\\Public\\\n02:51:12Z  RANSOMWARE_BEHAVIOR  FS01  svc_update.exe  rename_rate=1100/min  action=DETECT_ONLY\n02:51:12Z  ALERT_QUEUED  (email to unattended mailbox)"
+    },
+    {
+     "id": "L-03",
+     "title": "File server audit: scope of encryption",
+     "type": "file_metadata",
+     "source": "FS01 audit log",
+     "timestamp": "2026-05-18T03:34:00Z",
+     "summary": "Which shares were changed and which were not.",
+     "fields": [
+      {
+       "label": "Files renamed",
+       "value": "41,320 between 02:51 and 03:34"
+      },
+      {
+       "label": "Shares affected",
+       "value": "\\\\FS01\\Clients, \\\\FS01\\Billing"
+      },
+      {
+       "label": "Share unaffected",
+       "value": "\\\\FS01\\Archive (read-only mount)"
+      },
+      {
+       "label": "Encryption stopped",
+       "value": "03:34 (run completed)"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-04",
+     "title": "VPN log: svc-vendor signs in from a new IP",
+     "type": "auth_log",
+     "source": "VPN concentrator",
+     "timestamp": "2026-05-17T23:02:41Z",
+     "summary": "A vendor service account connects from an address it has never used, with no second factor.",
+     "fields": [
+      {
+       "label": "Account",
+       "value": "svc-vendor"
+      },
+      {
+       "label": "Source IP",
+       "value": "203.0.113.140"
+      },
+      {
+       "label": "Usual source (90 days)",
+       "value": "198.51.100.200, weekly on Tuesdays"
+      },
+      {
+       "label": "MFA",
+       "value": "Not enabled for service accounts"
+      },
+      {
+       "label": "Password last changed",
+       "value": "August 2021"
+      },
+      {
+       "label": "Session length",
+       "value": "About 5 hours"
+      }
+     ],
+     "headers": [],
+     "content": "2026-05-17 23:02:41Z  VPN_LOGIN  svc-vendor  src=203.0.113.140  mfa=none  result=SUCCESS\n2026-05-18 04:07:12Z  VPN_LOGOUT svc-vendor  src=203.0.113.140"
+    },
+    {
+     "id": "L-05",
+     "title": "Directory log: privileges granted to svc-vendor on FS01",
+     "type": "system_log",
+     "source": "Active Directory / FS01 security log",
+     "timestamp": "2026-05-18T02:30:09Z",
+     "summary": "The vendor account gained administrator rights on the file server and a scheduled task appeared.",
+     "fields": [
+      {
+       "label": "Event",
+       "value": "svc-vendor added to local Administrators on FS01"
+      },
+      {
+       "label": "Session type",
+       "value": "Remote (via VPN)"
+      },
+      {
+       "label": "Account's intended rights",
+       "value": "Application support only"
+      },
+      {
+       "label": "Follow-on",
+       "value": "Scheduled task \"UpdateSvc\" created 02:47 to run svc_update.exe"
+      }
+     ],
+     "headers": [],
+     "content": "02:30:09Z  GROUP_MEMBER_ADDED  FS01\\Administrators  member=svc-vendor  by=svc-vendor(remote)\n02:47:55Z  SCHEDULED_TASK_CREATED  UpdateSvc  run=C:\\Users\\Public\\svc_update.exe  by=svc-vendor"
+    },
+    {
+     "id": "L-06",
+     "title": "NAS01 log: backup snapshots deleted",
+     "type": "system_log",
+     "source": "NAS01 appliance audit log",
+     "timestamp": "2026-05-18T02:45:03Z",
+     "summary": "The online backup appliance lost its snapshots six minutes before encryption began.",
+     "fields": [
+      {
+       "label": "Event",
+       "value": "12 snapshots deleted from volume Backup-Nightly"
+      },
+      {
+       "label": "Actor",
+       "value": "svc-vendor via admin share"
+      },
+      {
+       "label": "Last nightly backup",
+       "value": "Mon 01:00, completed OK (now deleted)"
+      },
+      {
+       "label": "NAS01 domain-joined?",
+       "value": "Yes, reachable from the compromised account"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-07",
+     "title": "Offline backup rotation record (Sunday 20:00)",
+     "type": "document",
+     "source": "Backup rotation checklist, signed by D. Whitfield",
+     "timestamp": "2026-05-17T20:00:00Z",
+     "summary": "The weekly backup to a disconnected disk completed and was locked in the safe before the intrusion.",
+     "fields": [
+      {
+       "label": "Backup set",
+       "value": "WK20 (weekly, full)"
+      },
+      {
+       "label": "Written",
+       "value": "Sun 17 May 20:00–20:28 UTC"
+      },
+      {
+       "label": "Media",
+       "value": "USB disk, disconnected after the job, locked in safe"
+      },
+      {
+       "label": "Connected to the network during the incident?",
+       "value": "No"
+      },
+      {
+       "label": "Last test restore",
+       "value": "3 May 2026, passed (200 sample files)"
+      },
+      {
+       "label": "Practice open on Sunday?",
+       "value": "No, so little or no new data after 20:00"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-08",
+     "title": "Endpoint inventory: which hosts are affected",
+     "type": "asset",
+     "source": "EDR coverage report",
+     "timestamp": "2026-05-18T08:10:00Z",
+     "summary": "Indicators were found on four of 26 computers; three have no monitoring agent.",
+     "fields": [
+      {
+       "label": "Hosts with indicators",
+       "value": "FS01, RECEPTION-PC, BILLING-02, BILLING-03"
+      },
+      {
+       "label": "Hosts with no indicators",
+       "value": "19"
+      },
+      {
+       "label": "Hosts with no EDR agent",
+       "value": "X-RAY-PC, SCANNER-PC, OLD-PRINT-SRV (status unknown)"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-09",
+     "title": "Patch log: Sunday evening update deployment",
+     "type": "system_log",
+     "source": "Patch management console",
+     "timestamp": "2026-05-17T21:00:00Z",
+     "summary": "A routine cumulative update was pushed to 24 computers five hours before encryption.",
+     "fields": [
+      {
+       "label": "Deployed",
+       "value": "Sun 21:00 UTC to 24 hosts"
+      },
+      {
+       "label": "Components",
+       "value": "Vendor-signed system packages"
+      },
+      {
+       "label": "Failures",
+       "value": "0"
+      },
+      {
+       "label": "Relation to svc_update.exe",
+       "value": "None: different path, unsigned, launched by remote session"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-10",
+     "title": "Antivirus scan history: Saturday scan clean",
+     "type": "system_log",
+     "source": "Endpoint antivirus console",
+     "timestamp": "2026-05-16T14:00:00Z",
+     "summary": "A scheduled full scan found nothing on any host.",
+     "fields": [
+      {
+       "label": "Scan",
+       "value": "Sat 16 May 14:00 UTC, all hosts"
+      },
+      {
+       "label": "Result",
+       "value": "Clean"
+      },
+      {
+       "label": "Signature database",
+       "value": "Current at the time"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-11",
+     "title": "Statement: Dana Whitfield, office manager",
+     "type": "witness",
+     "source": "Interview, Monday 08:20",
+     "timestamp": "2026-05-18T08:20:00Z",
+     "summary": "What Dana found and what she did before calling you.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Dana Whitfield"
+      },
+      {
+       "label": "Reliability",
+       "value": "Consistent with logs where checkable"
+      }
+     ],
+     "headers": [],
+     "content": "\"I got in at 7:40, saw the message on reception and restarted that PC twice. It still showed the message. I opened the note on two other PCs to read it. I haven't touched the server. The offline disk is in the safe where I left it on Sunday night. Dr. Okafor wants to open at 8:30.\""
+    },
+    {
+     "id": "L-12",
+     "title": "Email: Dr. Okafor, \"Just pay\"",
+     "type": "email",
+     "source": "Mail archive",
+     "timestamp": "2026-05-18T08:02:00Z",
+     "summary": "The owner's instruction to the office manager and IT.",
+     "fields": [
+      {
+       "label": "From",
+       "value": "aokafor@lakeview-dental.example"
+      },
+      {
+       "label": "To",
+       "value": "dwhitfield@lakeview-dental.example"
+      },
+      {
+       "label": "Sent",
+       "value": "Mon 08:02 UTC"
+      }
+     ],
+     "headers": [],
+     "content": "\"Just pay whatever they want. We have 40 patients booked today and I can't run the practice without the schedule. Get it back by 8:30, whatever it takes.\""
+    },
+    {
+     "id": "L-13",
+     "title": "Firewall egress log: large outbound transfer from FS01",
+     "type": "network_log",
+     "source": "Perimeter firewall",
+     "timestamp": "2026-05-18T02:10:00Z",
+     "summary": "FS01 sent about 4.2 GB to the same IP that signed into the VPN, just before the encryption.",
+     "fields": [
+      {
+       "label": "Source",
+       "value": "FS01"
+      },
+      {
+       "label": "Destination",
+       "value": "203.0.113.140 (same IP as the VPN login)"
+      },
+      {
+       "label": "Volume",
+       "value": "≈4.2 GB over HTTPS, 02:10–02:40 UTC"
+      },
+      {
+       "label": "Normal outbound from FS01",
+       "value": "Under 50 MB per day"
+      },
+      {
+       "label": "Content visibility",
+       "value": "Encrypted; contents not inspectable"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "L-14",
+     "title": "Account report: former IT contractor jkarlsson",
+     "type": "config",
+     "source": "Directory account audit",
+     "timestamp": "2026-02-11T09:00:00Z",
+     "summary": "The owner suspects a disgruntled ex-contractor. This is the status of his account.",
+     "fields": [
+      {
+       "label": "Account",
+       "value": "jkarlsson"
+      },
+      {
+       "label": "Status",
+       "value": "Disabled 11 Feb 2026"
+      },
+      {
+       "label": "Sign-ins since",
+       "value": "None"
+      },
+      {
+       "label": "Involvement in the events",
+       "value": "None found"
+      }
+     ],
+     "headers": [],
+     "content": null
+    }
+   ],
+   "learningObjectives": [
+    "Reconstruct a ransomware incident from VPN, directory, backup, firewall and EDR evidence.",
+    "Explain why service accounts without MFA and excessive privileges are high-value targets.",
+    "Judge which backups are trustworthy and why offline copies matter.",
+    "Order containment, preservation, eradication and recovery steps correctly.",
+    "Resist pressure-driven decisions such as paying immediately or wiping evidence.",
+    "Treat attacker claims (such as stolen data) as unverified until the evidence supports them."
+   ],
+   "verdictOptions": [
+    {
+     "id": "contain_restore",
+     "label": "Ransomware entered through the compromised vendor VPN account: isolate, preserve evidence, rebuild and restore from the verified offline backup, and do not pay"
+    },
+    {
+     "id": "restore_online_backup",
+     "label": "Ransomware confirmed; restore from the NAS01 nightly backups"
+    },
+    {
+     "id": "pay_ransom",
+     "label": "Pay the ransom to get the schedule back quickly"
+    },
+    {
+     "id": "bad_update",
+     "label": "A faulty Sunday software update corrupted the files"
+    },
+    {
+     "id": "insider_sabotage",
+     "label": "A former IT contractor sabotaged the systems"
+    },
+    {
+     "id": "hardware_failure",
+     "label": "A storage hardware failure damaged the files"
+    }
+   ]
+  },
+  {
+   "id": "case-insider-paradox",
+   "slug": "the-insider-paradox",
+   "number": 4,
+   "title": "The Insider Paradox",
+   "tagline": "Three accounts. None of them match the logs.",
+   "description": "A manager is certain a scientist stole research data. A colleague says she saw it happen. The scientist denies everything. The records disagree with all three. Decide what the evidence actually supports, and what it cannot.",
+   "difficulty": "advanced",
+   "estimatedMinutes": 45,
+   "categories": [
+    "Insider threat",
+    "Witness reliability",
+    "Evidence correlation"
+   ],
+   "briefing": [
+    "Orion Biotech Labs is a fictional 80-person research company. On Thursday 11 June 2026 a data-loss-prevention alert showed 412 files from the LYRA assay dataset downloaded at night by the account jweber (Jonas Weber, Research Scientist).",
+    "His manager Claire Donnelly says she is certain Jonas copied the data to a USB stick in the lab around 10 PM. A colleague, Mira Ostrow, says she saw him there. Jonas says he was at home and never downloaded anything.",
+    "Nobody has done anything yet. Your job is to establish what the records actually show, which statements they support or contradict, and what cannot be concluded. Rushing to accuse someone would be a mistake with real consequences. All times are UTC."
+   ],
+   "entities": [
+    {
+     "id": "jonas",
+     "name": "Jonas Weber",
+     "role": "Research Scientist",
+     "kind": "person",
+     "note": "Account jweber. Managed laptop LT-0733."
+    },
+    {
+     "id": "claire",
+     "name": "Claire Donnelly",
+     "role": "Research Manager, hiring manager for a pending promotion",
+     "kind": "person"
+    },
+    {
+     "id": "mira",
+     "name": "Mira Ostrow",
+     "role": "Research Scientist",
+     "kind": "person",
+     "note": "Account mostrow"
+    },
+    {
+     "id": "halden",
+     "name": "Halden Compliance",
+     "role": "External auditor (contracted)",
+     "kind": "org",
+     "note": "Contact: Pieter Lund"
+    },
+    {
+     "id": "portal",
+     "name": "Audit portal",
+     "role": "Approved external upload service",
+     "kind": "service",
+     "note": "audit-portal.orion-biotech.example"
+    },
+    {
+     "id": "lyra",
+     "name": "LYRA assay dataset",
+     "role": "Restricted research data",
+     "kind": "asset"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "i-o1",
+     "text": "Test each witness statement against the records that can check it."
+    },
+    {
+     "id": "i-o2",
+     "text": "Establish what the account and device actually did, and from where."
+    },
+    {
+     "id": "i-o3",
+     "text": "Determine why the data was pulled and where it went."
+    },
+    {
+     "id": "i-o4",
+     "text": "Separate motive speculation from evidence (check at least three)."
+    }
+   ],
+   "evidence": [
+    {
+     "id": "I-01",
+     "title": "DLP alert: after-hours bulk download",
+     "type": "system_log",
+     "source": "Data-loss-prevention console",
+     "timestamp": "2026-06-10T21:58:30Z",
+     "summary": "The alert that started the accusation. It records what happened, not why.",
+     "fields": [
+      {
+       "label": "Account",
+       "value": "jweber"
+      },
+      {
+       "label": "Rule",
+       "value": "More than 300 files from a restricted share in 10 minutes, outside business hours"
+      },
+      {
+       "label": "Files / volume",
+       "value": "412 files, about 1.8 GB"
+      },
+      {
+       "label": "Device",
+       "value": "LT-0733 (company-managed laptop)"
+      },
+      {
+       "label": "Destination",
+       "value": "Local disk of the managed laptop"
+      },
+      {
+       "label": "External transfer detected by this rule",
+       "value": "None"
+      },
+      {
+       "label": "Reviewed",
+       "value": "Thu 08:30 by SOC; line manager notified 08:45"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-02",
+     "title": "Statement: Claire Donnelly",
+     "type": "witness",
+     "source": "Interview, Thursday 09:10",
+     "timestamp": "2026-06-11T09:10:00Z",
+     "summary": "The manager's certainty that Jonas copied the data to USB in the lab.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Claire Donnelly, Research Manager"
+      },
+      {
+       "label": "Reliability",
+       "value": "Parts conflict with email, badge and device records"
+      }
+     ],
+     "headers": [],
+     "content": "\"I'm certain Jonas copied the LYRA data to a USB stick in the lab around ten last night. Mira told me she saw him. He's been secretive lately, ever since the promotion round started. I never asked him to do anything with that data after hours.\""
+    },
+    {
+     "id": "I-03",
+     "title": "Statement: Mira Ostrow",
+     "type": "witness",
+     "source": "Interview, Thursday 09:40",
+     "timestamp": "2026-06-11T09:40:00Z",
+     "summary": "A colleague says she saw Jonas near the cold room at 10 PM.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Mira Ostrow, Research Scientist"
+      },
+      {
+       "label": "Reliability",
+       "value": "Conflicts with the badge log"
+      }
+     ],
+     "headers": [],
+     "content": "\"Around ten I saw Jonas near the cold room carrying a bag. I assumed he was copying data and I mentioned it to Claire this morning. I could be wrong, it was dim and I was in a hurry.\""
+    },
+    {
+     "id": "I-04",
+     "title": "Statement: Jonas Weber",
+     "type": "witness",
+     "source": "Interview, Thursday 10:15",
+     "timestamp": "2026-06-11T10:15:00Z",
+     "summary": "Jonas says he went home and never downloaded anything.",
+     "fields": [
+      {
+       "label": "Witness",
+       "value": "Jonas Weber, Research Scientist"
+      },
+      {
+       "label": "Reliability",
+       "value": "Denial of the download conflicts with access logs"
+      }
+     ],
+     "headers": [],
+     "content": "\"I left at six and went home. I haven't touched LYRA since Tuesday. I never downloaded anything last night. Why are you asking me this?\""
+    },
+    {
+     "id": "I-05",
+     "title": "Badge log: who was in the building on Wednesday night",
+     "type": "system_log",
+     "source": "Physical access control",
+     "timestamp": "2026-06-10T18:05:00Z",
+     "summary": "Jonas badged out at 18:05 and did not return before Thursday morning.",
+     "fields": [
+      {
+       "label": "J. Weber",
+       "value": "Badge-out Wed 18:05; no badge-in until Thu 08:12"
+      },
+      {
+       "label": "M. Ostrow",
+       "value": "Building entry 17:30; cold room door 21:58 (open 14 min)"
+      },
+      {
+       "label": "Other staff after 20:00",
+       "value": "None"
+      },
+      {
+       "label": "Lab main door, 21:30–23:00",
+       "value": "Only M. Ostrow's badge"
+      },
+      {
+       "label": "Tailgating possible?",
+       "value": "Not excluded by badge data alone"
+      }
+     ],
+     "headers": [],
+     "content": "18:05:12Z  EXIT   J.WEBER   main door\n21:58:03Z  OPEN   M.OSTROW  cold room\n22:12:40Z  CLOSE  cold room (door sensor)"
+    },
+    {
+     "id": "I-06",
+     "title": "VPN log: jweber signs in from his usual home IP",
+     "type": "auth_log",
+     "source": "VPN concentrator",
+     "timestamp": "2026-06-10T21:40:11Z",
+     "summary": "Remote sign-in with MFA approved on Jonas's enrolled phone.",
+     "fields": [
+      {
+       "label": "Account",
+       "value": "jweber"
+      },
+      {
+       "label": "Source IP",
+       "value": "198.51.100.77 (in his 60-day baseline)"
+      },
+      {
+       "label": "MFA",
+       "value": "Push approved on enrolled device \"J-Weber-iPhone\""
+      },
+      {
+       "label": "Device",
+       "value": "LT-0733 (managed)"
+      },
+      {
+       "label": "Prior use of this IP",
+       "value": "41 sign-ins in the last 60 days"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-07",
+     "title": "File access log: 412 files downloaded over VPN",
+     "type": "file_metadata",
+     "source": "Research file server audit log",
+     "timestamp": "2026-06-10T21:52:04Z",
+     "summary": "The account jweber copied the LYRA dataset to LT-0733 during the VPN session.",
+     "fields": [
+      {
+       "label": "Window",
+       "value": "21:52:04–21:58:11 UTC"
+      },
+      {
+       "label": "Account",
+       "value": "jweber, via VPN session from 198.51.100.77"
+      },
+      {
+       "label": "Files",
+       "value": "412 (raw assay CSV and analysis notebooks)"
+      },
+      {
+       "label": "Destination",
+       "value": "LT-0733 local disk"
+      },
+      {
+       "label": "Matches request?",
+       "value": "\"Full LYRA assay set\" as in the Wednesday 16:31 email"
+      }
+     ],
+     "headers": [],
+     "content": "21:52:04Z  READ  \\\\LYRA_assay\\raw\\*  jweber  vpn=198.51.100.77  dest=LT-0733\n21:58:11Z  READ  \\\\LYRA_assay\\notebooks\\*  jweber  vpn=198.51.100.77  dest=LT-0733  total=412 files"
+    },
+    {
+     "id": "I-08",
+     "title": "Email: Claire asks Jonas to pull the dataset",
+     "type": "email",
+     "source": "Mail archive",
+     "timestamp": "2026-06-10T16:31:00Z",
+     "summary": "Wednesday afternoon, the manager asks Jonas for exactly the data that was later downloaded.",
+     "fields": [
+      {
+       "label": "From",
+       "value": "cdonnelly@orion-biotech.example"
+      },
+      {
+       "label": "To",
+       "value": "jweber@orion-biotech.example"
+      },
+      {
+       "label": "Sent",
+       "value": "Wed 10 Jun 2026 16:31 UTC"
+      },
+      {
+       "label": "Subject",
+       "value": "Auditors need LYRA by 9am"
+      }
+     ],
+     "headers": [],
+     "content": "\"Jonas, Halden need the full LYRA assay set by 9am tomorrow. Can you pull it tonight and upload it to the audit portal? Link is in the audit folder. Thanks, Claire\""
+    },
+    {
+     "id": "I-09",
+     "title": "Audit portal upload log",
+     "type": "network_log",
+     "source": "Audit portal access log",
+     "timestamp": "2026-06-10T22:15:20Z",
+     "summary": "The 1.8 GB archive went to the approved external auditor portal, and nowhere else.",
+     "fields": [
+      {
+       "label": "Upload",
+       "value": "LYRA_assay_full.zip, 1.8 GB"
+      },
+      {
+       "label": "Account",
+       "value": "jweber, from LT-0733 over the VPN session"
+      },
+      {
+       "label": "Destination",
+       "value": "audit-portal.orion-biotech.example (approved external service)"
+      },
+      {
+       "label": "Other external uploads from this session",
+       "value": "None in the proxy log"
+      }
+     ],
+     "headers": [],
+     "content": "22:15:20Z  UPLOAD  LYRA_assay_full.zip  1.8GB  jweber  src=LT-0733  dest=audit-portal.orion-biotech.example  status=200"
+    },
+    {
+     "id": "I-10",
+     "title": "Device-control log: removable media Wednesday night",
+     "type": "system_log",
+     "source": "Endpoint device-control (all lab computers and LT-0733)",
+     "timestamp": "2026-06-11T08:00:00Z",
+     "summary": "No USB storage was connected on any monitored device between 18:00 and 08:00.",
+     "fields": [
+      {
+       "label": "Removable-media events 18:00–08:00",
+       "value": "0"
+      },
+      {
+       "label": "Lab workstation USB ports",
+       "value": "Disabled by policy except approved devices"
+      },
+      {
+       "label": "LT-0733",
+       "value": "No removable-media events"
+      },
+      {
+       "label": "Coverage gaps",
+       "value": "None known for monitored hosts"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-11",
+     "title": "Device posture: LT-0733 location and activity",
+     "type": "asset",
+     "source": "Endpoint management",
+     "timestamp": "2026-06-10T21:39:00Z",
+     "summary": "The laptop was idle and off the office network until it woke at home.",
+     "fields": [
+      {
+       "label": "Lid closed / asleep",
+       "value": "18:20–21:38"
+      },
+      {
+       "label": "Woke / unlocked",
+       "value": "21:39 on 198.51.100.77"
+      },
+      {
+       "label": "On office network Wed after 18:20",
+       "value": "No"
+      },
+      {
+       "label": "Disk encryption / managed state",
+       "value": "Enabled / compliant"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-12",
+     "title": "HR note: pending Senior Scientist promotion",
+     "type": "document",
+     "source": "HR system",
+     "timestamp": "2026-05-20T00:00:00Z",
+     "summary": "Jonas and Mira both applied; Claire is the hiring manager; decision pending.",
+     "fields": [
+      {
+       "label": "Candidates",
+       "value": "Jonas Weber, Mira Ostrow"
+      },
+      {
+       "label": "Decision maker",
+       "value": "Claire Donnelly"
+      },
+      {
+       "label": "Decision date",
+       "value": "Not yet set"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-13",
+     "title": "HR file: verbal warning from 14 months ago",
+     "type": "document",
+     "source": "HR system",
+     "timestamp": "2025-04-02T00:00:00Z",
+     "summary": "Jonas once received a warning for emailing a dataset to a personal address.",
+     "fields": [
+      {
+       "label": "Date",
+       "value": "2 Apr 2025"
+      },
+      {
+       "label": "Matter",
+       "value": "Sent a non-restricted dataset to personal email"
+      },
+      {
+       "label": "Outcome",
+       "value": "Verbal warning, training completed"
+      },
+      {
+       "label": "Relevance to LYRA",
+       "value": "Different dataset, different channel"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-14",
+     "title": "Cold room log and sample withdrawal record",
+     "type": "system_log",
+     "source": "Cold room access and inventory system",
+     "timestamp": "2026-06-10T21:58:03Z",
+     "summary": "Mira herself was at the cold room at the time, retrieving samples in a cooler bag.",
+     "fields": [
+      {
+       "label": "Door opened",
+       "value": "21:58:03 by M.OSTROW"
+      },
+      {
+       "label": "Door closed",
+       "value": "22:12:40"
+      },
+      {
+       "label": "Inventory event",
+       "value": "Mira Ostrow withdrew 6 aliquots (cooler bag)"
+      },
+      {
+       "label": "Other badges at the cold room",
+       "value": "None"
+      }
+     ],
+     "headers": [],
+     "content": null
+    },
+    {
+     "id": "I-15",
+     "title": "Email: auditor confirms receipt",
+     "type": "email",
+     "source": "Mail archive",
+     "timestamp": "2026-06-11T08:02:00Z",
+     "summary": "Halden Compliance thanks Claire for the dataset delivered overnight.",
+     "fields": [
+      {
+       "label": "From",
+       "value": "plund@halden-compliance.example"
+      },
+      {
+       "label": "To",
+       "value": "cdonnelly@orion-biotech.example"
+      },
+      {
+       "label": "Sent",
+       "value": "Thu 11 Jun 2026 08:02 UTC"
+      },
+      {
+       "label": "Subject",
+       "value": "Re: Auditors need LYRA by 9am"
+      }
+     ],
+     "headers": [],
+     "content": "\"Hi Claire, thanks, we received LYRA_assay_full.zip via the portal at 22:16 last night and have started the review. Checksum matches. Pieter\""
+    },
+    {
+     "id": "I-16",
+     "title": "Browser history: searches on LT-0733 at 21:20",
+     "type": "browser",
+     "source": "Managed browser history (LT-0733)",
+     "timestamp": "2026-06-10T21:20:00Z",
+     "summary": "Two searches that sound sinister when quoted on their own.",
+     "fields": [
+      {
+       "label": "Search 1",
+       "value": "\"how to send large files to external auditors\""
+      },
+      {
+       "label": "Search 2",
+       "value": "\"email attachment size limit\""
+      },
+      {
+       "label": "Followed by",
+       "value": "Opened the audit portal instructions page"
+      }
+     ],
+     "headers": [],
+     "content": null
+    }
+   ],
+   "learningObjectives": [
+    "Test witness statements against independent records instead of choosing a side.",
+    "Correlate email, badge, VPN, device, file-access and upload evidence into one timeline.",
+    "Distinguish motive, history and suspicion from evidence of action.",
+    "Recognise that a contradicted statement is not proof of lying.",
+    "Draw a conclusion the evidence supports while stating what cannot be known.",
+    "Recommend fair, privacy-respecting follow-up actions."
+   ],
+   "verdictOptions": [
+    {
+     "id": "authorized_task",
+     "label": "An authorised, task-driven download with no evidence of exfiltration or misconduct; the conflicting accounts reflect inaccurate recollection, not proof of wrongdoing"
+    },
+    {
+     "id": "inconclusive",
+     "label": "Inconclusive: the statements conflict too much to conclude anything"
+    },
+    {
+     "id": "account_compromise",
+     "label": "An outsider used Jonas's account or laptop"
+    },
+    {
+     "id": "malicious_exfil",
+     "label": "Jonas stole the dataset"
+    },
+    {
+     "id": "witness_fabrication",
+     "label": "Mira and Claire deliberately fabricated claims to frame Jonas"
+    }
+   ]
+  }
+ ]
+}
