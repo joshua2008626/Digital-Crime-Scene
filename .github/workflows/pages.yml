@@ -5,16 +5,16 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-
+ 
 permissions:
   contents: read
   pages: write
   id-token: write
-
+ 
 concurrency:
   group: pages
   cancel-in-progress: true
-
+ 
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -28,10 +28,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
+          node-version: 22
+      - run: npm install --no-audit --no-fund
       - run: npm run build
         env:
           VITE_API_URL: ""   # Pages is static: no backend
@@ -40,3 +38,4 @@ jobs:
           path: frontend/dist
       - id: deployment
         uses: actions/deploy-pages@v4
+ 
